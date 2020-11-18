@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+{% load humanize%}
+
+{% block content %}
+    <div class="container" id="feedapp">
+        <div class="columns">
+            <div class="column is-12">
+                <div class="wrapper-form">
+                    <form v-on:submit.prevent = submitPost()>
+                        <div class="field">
+                            <div class="control">
+                                <textarea class="textarea" v-model="body" placeholder="What ar you thinking"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-success">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="wrapper-posts">
+                    {% for post in posts %}
+                        <div class= "post">
+                            <p class="name">{{ post.created_by.username}}</p>
+                            <p>{{post.body}}</p>
+                            <p class="info">{{ post.created_at | naturaltime }}</p>
+                        </div>
+                    
+                    {% endfor %}
+                    <div class="post" v-for='post in posts'>
+                        <p class="name">[[post.user]]</p>
+                        <p>[[ post.body ]]</p>
+                        <p class="info">[[post.created_at]]</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        new Vue({
+            el: '#feedapp',
+            delimiters:['[[',']]'],
+            data(){
+                return {
+                    posts: [],
+                    body: '',
+                    user:'{{ request.user.username }}',
+                    created_at:'Now'
+                }
+            },
+            methods: {
+                submitPost(){
+                    console.log('submitPost');
+
+                    if(this.body.length>0) {
+                        var post = {
+                            'body': this.body,
+                            'user': this.user,
+                            'created_at': this.created_at
+                        };
+
+                        this.posts.unshift(post);
+
+                        fetch('/api/add_post',{
+                            method:'POST',
+                            headers:{
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{csrf_token}}'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(post)
+                        })
+                        .then((response) => {
+                            console.log(response);
+
+                        })
+                        .catch((error)=>{
+                            console.log(error);
+                        });
+                    }
+                    this.body = '';
+                }
+            }
+        });
+    </script>
+
+{% endblock%}
