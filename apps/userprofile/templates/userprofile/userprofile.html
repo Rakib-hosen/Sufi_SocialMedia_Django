@@ -6,7 +6,12 @@
         <div class="columns">
             <div class="column is-12">
                 <h1 class="title">{{user.username}}</h1>
-
+                {% if user.userprofile.avatar %}
+                <figure class="image is-128x128">
+                    <img src="{{ user.userprofile.avatar.url }}">
+                </figure>
+                {% endif %}
+                <hr>
                 <p> <a href="{% url 'followers' user.username %}"> Followers : {{user.userprofile.followed_by.count}}</a></p>
                 <p> <a href="{% url 'follows' user.username %}">Follows : {{user.userprofile.follows.count}}</a></p>
 
@@ -24,9 +29,25 @@
                 <div class="wrapper-posts">
                     {% for post in user.posts.all%}
                         <div class="post">
-                            <p class="name">{{post.created_by.username}}</p>
-                            <p>{{post.body}}</p>
-                            <p class="info">{{post.created_at | naturaltime}}</p>
+                            <article class="media">
+                                <figure class="media-left">
+                                    <p class="image is-64x64">
+                                        {% if user.userprofile.avatar %}
+                                            <img src="{{ user.userprofile.avatar.url }}">
+                                        {% endif %}
+                                    </p>
+                                </figure>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p>
+                                            <strong>{{post.created_by.username}}</strong>
+                                            <small>{{post.created_at | naturaltime}}</small>
+                                            <br>
+                                            {{post.body}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </article>
                         </div>
                     {% endfor%}
                 </div>

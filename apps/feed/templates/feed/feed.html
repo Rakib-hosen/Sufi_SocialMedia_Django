@@ -21,19 +21,50 @@
                     </form>
                 </div>
                 <div class="wrapper-posts">
+                    <div class="post" v-for='post in posts'>
+                        <article class="media">
+                            <figure class="media-left">
+                                <p class="image is-64x64">
+                                        <img :src="post.avatar">
+                                </p>
+                            </figure>
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+                                        <strong>[[post.user]]</strong>
+                                        <small>[[post.created_at]]</small>
+                                        <br>
+                                        [[ post.body ]]
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
                     {% for post in posts %}
                         <div class= "post">
-                            <p class="name">{{ post.created_by.username}}</p>
-                            <p>{{post.body}}</p>
-                            <p class="info">{{ post.created_at | naturaltime }}</p>
+                            <article class="media">
+                                <figure class="media-left">
+                                    <p class="image is-64x64">
+                                        {% if user.userprofile.avatar %}
+                                            <img src="{{ post.created_by.userprofile.avatar.url }}">
+                                        {% endif %}
+                                    </p>
+                                </figure>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p>
+                                            <strong>{{post.created_by.username}}</strong>
+                                            <small>{{post.created_at | naturaltime}}</small>
+                                            <br>
+                                            {{post.body}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </article>
                         </div>
                     
                     {% endfor %}
-                    <div class="post" v-for='post in posts'>
-                        <p class="name">[[post.user]]</p>
-                        <p>[[ post.body ]]</p>
-                        <p class="info">[[post.created_at]]</p>
-                    </div>
+                    
                 </div>
 
             </div>
@@ -50,7 +81,8 @@
                     posts: [],
                     body: '',
                     user:'{{ request.user.username }}',
-                    created_at:'Now'
+                    created_at:'Now',
+                    avatar: '{% if request.user.userprofile.avatar %} {{ request.user.userprofile.avatar.url }}{% endif %}'
                 }
             },
             methods: {
@@ -61,7 +93,8 @@
                         var post = {
                             'body': this.body,
                             'user': this.user,
-                            'created_at': this.created_at
+                            'created_at': this.created_at,
+                            'avatar': this.avatar
                         };
 
                         this.posts.unshift(post);
