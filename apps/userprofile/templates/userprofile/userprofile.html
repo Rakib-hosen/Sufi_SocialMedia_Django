@@ -2,7 +2,7 @@
 {% load humanize%}
 
 {% block content %}
-    <div class="container" id="feedapp">
+    <div class="container" id="userprofileapp">
         <div class="columns">
             <div class="column is-12">
                 <h1 class="title">{{user.username}}</h1>
@@ -16,6 +16,7 @@
                 <p> <a href="{% url 'follows' user.username %}">Follows : {{user.userprofile.follows.count}}</a></p>
 
                 {% if user != request.user %}
+                    <a href="{% url 'conversation' user.id %}" class="button is-info">Send message</a>
                     {% if request.user.userprofile in user.userprofile.followed_by.all %}
                         <a href="{% url 'unfollow_user' user.username %}" class="button is-danger">unfollow</a>
                     {% else %}
@@ -27,7 +28,7 @@
         <div class="columns">
             <div class="columns is-8">
                 <div class="wrapper-posts">
-                    {% for post in user.posts.all%}
+                    {% for post in posts%}
                         <div class="post">
                             <article class="media">
                                 <figure class="media-left">
@@ -44,6 +45,10 @@
                                             <small>{{post.created_at | naturaltime}}</small>
                                             <br>
                                             {{post.body}}
+                                            <br>
+                                            <a @click= "likePost({{ post.id}})" v-if="!liked_posts.includes({{ post.id}})">Like</a>
+                                            <span v-if="liked_posts.includes({{post.id}})">Liked</span>
+                                            <small id="likes-{{post.id}}">{{post.likes.count}} likes</small>
                                         </p>
                                     </div>
                                 </div>
@@ -55,3 +60,45 @@
         </div>
     </div>
 {% endblock %}
+{% block script %}
+    <script>
+        new Vue({
+            el: '#userprofileapp',
+            delimiters:['[[',']]'],
+            data(){
+                return {
+                    liked_posts: [{%for post in posts %}{% if post.liked %}{{post.id}},{% endif%}{% endfor %}]
+                }
+            },
+            methods: {
+                likePost(post_id){
+                    this.liked_posts.push(parseInt(post_id));
+
+                    var post = {
+                        'post_id': post_id
+                    };
+                    fetch('/api/add_like/',{
+                            method:'POST',
+                            headers:{
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{csrf_token}}'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(post)
+                        })
+                        .then((response) => {
+                            console.log(response);
+
+                        })
+                        .catch((error)=>{
+                            console.log(error);
+                        });
+                        const el = document.getElementById('likes-'+ post_id);
+                        const likes = parseInt(el.innerHTML.split(' ')[0]+1);
+                        el.innerHTML = likes + ' likes';
+                }
+            }
+        });
+    </script>
+
+{% endblock%}

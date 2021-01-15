@@ -5,9 +5,19 @@ from .forms import UserProfileForm
 
 def userprofile(request, username):
     user = get_object_or_404(User, username=username)
+    posts = user.posts.all()
+
+    for post in posts:
+        likes = post.likes.filter(created_by_id = request.user.id)
+
+        if likes.count()> 0:
+            post.liked = True
+        else:
+            post.liked = False
 
     context = {
-        'user' : user
+        'user' : user,
+        'posts' : posts
     }
 
     return render(request,'userprofile/userprofile.html',context)
@@ -19,7 +29,7 @@ def edit_profile(request):
     if request.method == 'POST':
         #return render(request, 'userprofile/test.html')
         form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
-
+ 
         if form.is_valid():
             form.save()
 

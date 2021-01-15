@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.userprofile',
     'apps.feed',
+    'apps.conversation'
 ]
 
 MIDDLEWARE = [

@@ -22,8 +22,23 @@
         <div class="navbar-menu">
             <div class="navbar-end">
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'search' %}" class="navbar-item">Search</a>
+                <div class="navbar-start">
+                    <div class="navbar-item">
+                        <form method="get" action="{% url 'search' %}">
+                            <div class="field has-addons">
+                                <div class="control">
+                                    <input type="text" class="input" placeholder="Search" name="query">
+                                </div>
+                                <div class="control">
+                                    <button class="button is-success">Search</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+    
                     <a href="{% url 'feed' %}" class="navbar-item">Feed</a>
+                    <a href="{% url 'conversations' %}" class="navbar-item">Conversations</a>
                     <a href="{% url 'userprofile' request.user.username %}" class="navbar-item">Profile</a>
                     <a href="{% url 'edit_profile' %}"class="navbar-item">Edit profile</a>
                 {% endif %}

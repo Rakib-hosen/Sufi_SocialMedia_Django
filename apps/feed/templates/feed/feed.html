@@ -57,6 +57,10 @@
                                             <small>{{post.created_at | naturaltime}}</small>
                                             <br>
                                             {{post.body}}
+                                            <br>
+                                            <a @click= "likePost({{ post.id}})" v-if="!liked_posts.includes({{ post.id}})">Like</a>
+                                            <span v-if="liked_posts.includes({{post.id}})">Liked</span>
+                                            <small id="likes-{{post.id}}">{{post.likes.count}} likes</small>
                                         </p>
                                     </div>
                                 </div>
@@ -82,10 +86,37 @@
                     body: '',
                     user:'{{ request.user.username }}',
                     created_at:'Now',
-                    avatar: '{% if request.user.userprofile.avatar %} {{ request.user.userprofile.avatar.url }}{% endif %}'
+                    avatar: '{% if request.user.userprofile.avatar %} {{ request.user.userprofile.avatar.url }}{% endif %}',
+                    liked_posts: [{%for post in posts %}{% if post.liked %}{{post.id}},{% endif%}{% endfor %}]
                 }
             },
             methods: {
+                likePost(post_id){
+                    this.liked_posts.push(parseInt(post_id));
+
+                    var post = {
+                        'post_id': post_id
+                    };
+                    fetch('/api/add_like/',{
+                            method:'POST',
+                            headers:{
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{csrf_token}}'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(post)
+                        })
+                        .then((response) => {
+                            console.log(response);
+
+                        })
+                        .catch((error)=>{
+                            console.log(error);
+                        });
+                        const el = document.getElementById('likes-'+ post_id);
+                        const likes = parseInt(el.innerHTML.split(' ')[0]+1);
+                        el.innerHTML = likes + ' likes';
+                },
                 submitPost(){
                     console.log('submitPost');
 
@@ -99,7 +130,7 @@
 
                         this.posts.unshift(post);
 
-                        fetch('/api/add_post',{
+                        fetch('/api/add_post/',{
                             method:'POST',
                             headers:{
                                 'Content-Type': 'application/json',
